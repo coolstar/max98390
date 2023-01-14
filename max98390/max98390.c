@@ -419,8 +419,6 @@ void uploadDSMBin(PMAX98390_CONTEXT pDevice) {
 
 	max98390_reg_write(pDevice, MAX98390_R23E1_DSP_GLOBAL_EN, 0x01);
 
-	DbgPrint("Firmware uploaded!\n");
-
 dealloc:
 	free_firmware(fw);
 }
@@ -471,9 +469,7 @@ StartCodec(
 	/* Amp init setting */
 	max98390_init_regs(pDevice, vmon_slot_no, imon_slot_no);
 	/* Update dsm bin param */
-	/* {
-		uploadDSMBin(pDevice);
-	}*/
+	uploadDSMBin(pDevice);
 
 	/* Dsm Setting */
 	if (ref_rdc_value) {
@@ -492,6 +488,9 @@ StartCodec(
 	}
 
 	max98390_reg_write(pDevice, DSM_VOL_CTRL, 0x8a);
+	max98390_reg_update(pDevice,
+		MAX98390_R203A_AMP_EN,
+		MAX98390_AMP_EN_MASK, 1);
 	max98390_reg_write(pDevice, MAX98390_R23FF_GLOBAL_EN, 0x01);
 
 	pDevice->DevicePoweredOn = TRUE;
