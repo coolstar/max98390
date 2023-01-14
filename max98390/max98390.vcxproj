@@ -66,15 +66,19 @@
   <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -86,6 +90,9 @@
     <Inf>
       <TimeStamp>1.0.1</TimeStamp>
     </Inf>
+    <PreBuildEvent>
+      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -97,6 +104,9 @@
     <Inf>
       <TimeStamp>1.0.1</TimeStamp>
     </Inf>
+    <PreBuildEvent>
+      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -108,6 +118,9 @@
     <Inf>
       <TimeStamp>1.0.1</TimeStamp>
     </Inf>
+    <PreBuildEvent>
+      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -119,6 +132,9 @@
     <Inf>
       <TimeStamp>1.0.1</TimeStamp>
     </Inf>
+    <PreBuildEvent>
+      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Inf Include="max98390.inf" />
@@ -128,6 +144,7 @@
     <FilesToPackage Include="@(Inf->'%(CopyOutput)')" Condition="'@(Inf)'!=''" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="firmware.h" />
     <ClInclude Include="registers.h" />
     <ClInclude Include="spb.h" />
     <ClInclude Include="stdint.h" />
@@ -135,8 +152,14 @@
     <ClInclude Include="max98390.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="firmware.c" />
     <ClCompile Include="spb.c" />
     <ClCompile Include="max98390.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dsm_param_Google_Nightfury.bin">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

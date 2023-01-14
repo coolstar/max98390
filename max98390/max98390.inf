@@ -29,7 +29,8 @@ DefaultDestDir = 12
 1 = %DiskId1%,,,""
 
 [SourceDisksFiles]
-max98390.sys  = 1,,
+max98390.sys  = 1
+dsm_param_Google_Nightfury.bin  = 1
 
 ;*****************************************
 ; max98390  Install Section
@@ -48,6 +49,7 @@ CopyFiles=Drivers_Dir
 
 [Drivers_Dir]
 max98390.sys
+dsm_param_Google_Nightfury.bin
 
 ;-------------- Service installation
 [Max98390_Device.NT.Services]

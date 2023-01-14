@@ -21,9 +21,6 @@
 
 #include "spb.h"
 
-#define JACKDESC_RGB(r, g, b) \
-    ((COLORREF)((r << 16) | (g << 8) | (b)))
-
 //
 // String definitions
 //

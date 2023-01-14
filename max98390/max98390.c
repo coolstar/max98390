@@ -1,5 +1,6 @@
 #include "max98390.h"
 #include "registers.h"
+#include "firmware.h"
 
 #define bool int
 
@@ -275,6 +276,54 @@ Exit:
 	return status;
 }
 
+#define MAX_DEVICE_REG_VAL_LENGTH 0x100
+NTSTATUS GetSmbiosName(WCHAR systemProductName[MAX_DEVICE_REG_VAL_LENGTH]) {
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	HANDLE parentKey = NULL;
+	UNICODE_STRING ParentKeyName;
+	OBJECT_ATTRIBUTES  ObjectAttributes;
+	RtlInitUnicodeString(&ParentKeyName, L"\\Registry\\Machine\\Hardware\\DESCRIPTION\\System\\BIOS");
+
+	InitializeObjectAttributes(&ObjectAttributes,
+		&ParentKeyName,
+		OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+		NULL,    // handle
+		NULL);
+
+	status = ZwOpenKey(&parentKey, KEY_READ, &ObjectAttributes);
+	if (!NT_SUCCESS(status)) {
+		return status;
+	}
+
+	ULONG ResultLength;
+	PKEY_VALUE_PARTIAL_INFORMATION KeyValueInfo = (PKEY_VALUE_PARTIAL_INFORMATION)ExAllocatePoolZero(NonPagedPool, sizeof(KEY_VALUE_PARTIAL_INFORMATION) + MAX_DEVICE_REG_VAL_LENGTH, MAX98390_POOL_TAG);
+	if (!KeyValueInfo) {
+		status = STATUS_NO_MEMORY;
+		goto exit;
+	}
+
+	UNICODE_STRING SystemProductNameValue;
+	RtlInitUnicodeString(&SystemProductNameValue, L"SystemProductName");
+	status = ZwQueryValueKey(parentKey, &SystemProductNameValue, KeyValuePartialInformation, KeyValueInfo, sizeof(KEY_VALUE_PARTIAL_INFORMATION) + MAX_DEVICE_REG_VAL_LENGTH, &ResultLength);
+	if (!NT_SUCCESS(status)) {
+		goto exit;
+	}
+
+	if (KeyValueInfo->DataLength > MAX_DEVICE_REG_VAL_LENGTH) {
+		status = STATUS_BUFFER_OVERFLOW;
+		goto exit;
+	}
+
+	RtlZeroMemory(systemProductName, sizeof(systemProductName));
+	RtlCopyMemory(systemProductName, &KeyValueInfo->Data, KeyValueInfo->DataLength);
+
+exit:
+	if (KeyValueInfo) {
+		ExFreePoolWithTag(KeyValueInfo, MAX98390_POOL_TAG);
+	}
+	return status;
+}
+
 void max98390_init_regs(PMAX98390_CONTEXT pDevice, UINT8 vmon_slot_no, UINT8 imon_slot_no) {
 	max98390_reg_write(pDevice, MAX98390_CLK_MON, 0x6f);
 	max98390_reg_write(pDevice, MAX98390_DAT_MON, 0x00);
@@ -328,6 +377,54 @@ void max98390_init_regs(PMAX98390_CONTEXT pDevice, UINT8 vmon_slot_no, UINT8 imo
 	}
 }
 
+void uploadDSMBin(PMAX98390_CONTEXT pDevice) {
+	NTSTATUS status;
+
+	WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH];
+	status = GetSmbiosName(SystemProductName);
+	if (!NT_SUCCESS(status)) {
+		return;
+	}
+
+	struct firmware *fw = NULL;
+	status = STATUS_NOT_FOUND;
+	if (wcscmp(SystemProductName, L"Nightfury") == 0) {
+		status = request_firmware(&fw, L"\\SystemRoot\\system32\\DRIVERS\\dsm_param_Google_Nightfury.bin");
+	}
+	if (!NT_SUCCESS(status) || !fw) {
+		DbgPrint("Warning: No DSM found for MAX98390!!!\n");
+		return;
+	}
+
+	char* dsm_param = (char*)fw->data;
+	UINT16 param_size;
+	UINT16 param_start_addr;
+	param_start_addr = (dsm_param[0] & 0xff) | (dsm_param[1] & 0xff) << 8;
+	param_size = (dsm_param[2] & 0xff) | (dsm_param[3] & 0xff) << 8;
+
+	if (param_size > MAX98390_DSM_PARAM_MAX_SIZE ||
+		param_start_addr < MAX98390_IRQ_CTRL ||
+		fw->size < param_size + MAX98390_DSM_PAYLOAD_OFFSET) {
+		DbgPrint("DSM param fw is invalid.\n");
+		goto dealloc;
+	}
+
+
+	max98390_reg_write(pDevice, MAX98390_R203A_AMP_EN, 0x80);
+	dsm_param += MAX98390_DSM_PAYLOAD_OFFSET;
+
+	for (UINT16 i = 0; i < param_size; i++) {
+		max98390_reg_write(pDevice, param_start_addr + i, dsm_param[i]);
+	}
+
+	max98390_reg_write(pDevice, MAX98390_R23E1_DSP_GLOBAL_EN, 0x01);
+
+	DbgPrint("Firmware uploaded!\n");
+
+dealloc:
+	free_firmware(fw);
+}
+
 NTSTATUS
 StartCodec(
 	PMAX98390_CONTEXT pDevice
@@ -374,7 +471,9 @@ StartCodec(
 	/* Amp init setting */
 	max98390_init_regs(pDevice, vmon_slot_no, imon_slot_no);
 	/* Update dsm bin param */
-	//TODO: Upload DSM
+	/* {
+		uploadDSMBin(pDevice);
+	}*/
 
 	/* Dsm Setting */
 	if (ref_rdc_value) {
