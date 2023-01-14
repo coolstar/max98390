@@ -377,14 +377,8 @@ void max98390_init_regs(PMAX98390_CONTEXT pDevice, UINT8 vmon_slot_no, UINT8 imo
 	}
 }
 
-void uploadDSMBin(PMAX98390_CONTEXT pDevice) {
+void uploadDSMBin(PMAX98390_CONTEXT pDevice, WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH]) {
 	NTSTATUS status;
-
-	WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH];
-	status = GetSmbiosName(SystemProductName);
-	if (!NT_SUCCESS(status)) {
-		return;
-	}
 
 	struct firmware *fw = NULL;
 	status = STATUS_NOT_FOUND;
@@ -468,8 +462,14 @@ StartCodec(
 
 	/* Amp init setting */
 	max98390_init_regs(pDevice, vmon_slot_no, imon_slot_no);
+
+	WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH];
+	status = GetSmbiosName(SystemProductName);
+	if (!NT_SUCCESS(status)) {
+		return status;
+	}
 	/* Update dsm bin param */
-	uploadDSMBin(pDevice);
+	uploadDSMBin(pDevice, SystemProductName);
 
 	/* Dsm Setting */
 	if (ref_rdc_value) {
@@ -488,6 +488,21 @@ StartCodec(
 	}
 
 	max98390_reg_write(pDevice, DSM_VOL_CTRL, 0x8a);
+
+	max98390_reg_write(pDevice, MAX98390_PCM_CH_SRC_1, pDevice->UID % 2); //Set Left or Right according to UID
+
+	if (wcscmp(SystemProductName, L"Nightfury") == 0) { //10th gen
+		max98390_reg_update(pDevice,
+			MAX98390_BOOST_CTRL3,
+			3 << MAX98390_BOOST_CLK_PHASE_CFG_SHIFT,
+			(pDevice->UID ? 3 : 0) << MAX98390_BOOST_CLK_PHASE_CFG_SHIFT
+		);
+	}
+	else { //12th gen
+
+	}
+
+
 	max98390_reg_update(pDevice,
 		MAX98390_R203A_AMP_EN,
 		MAX98390_AMP_EN_MASK, 1);
