@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClInclude Include="firmware.h" />
     <ClInclude Include="registers.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="spb.h" />
     <ClInclude Include="stdint.h" />
     <ClInclude Include="trace.h" />
@@ -160,6 +161,9 @@
     <None Include="dsm_param_Google_Nightfury.bin">
       <DeploymentContent>true</DeploymentContent>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="max98390.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
