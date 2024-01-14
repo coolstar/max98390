@@ -276,6 +276,97 @@ Exit:
 	return status;
 }
 
+static NTSTATUS GetStringProperty(
+	_In_ WDFDEVICE FxDevice,
+	char* propertyStr,
+	char** property
+) {
+	PMAX98390_CONTEXT pDevice = GetDeviceContext(FxDevice);
+	WDFMEMORY outputMemory = WDF_NO_HANDLE;
+
+	NTSTATUS status = STATUS_ACPI_NOT_INITIALIZED;
+
+	size_t inputBufferLen = sizeof(ACPI_GET_DEVICE_SPECIFIC_DATA) + strlen(propertyStr) + 1;
+	ACPI_GET_DEVICE_SPECIFIC_DATA* inputBuffer = ExAllocatePoolWithTag(NonPagedPool, inputBufferLen, MAX98390_POOL_TAG);
+	if (!inputBuffer) {
+		goto Exit;
+	}
+	RtlZeroMemory(inputBuffer, inputBufferLen);
+
+	inputBuffer->Signature = IOCTL_ACPI_GET_DEVICE_SPECIFIC_DATA_SIGNATURE;
+
+	unsigned char uuidend[] = { 0x8a, 0x91, 0xbc, 0x9b, 0xbf, 0x4a, 0xa3, 0x01 };
+
+	inputBuffer->Section.Data1 = 0xdaffd814;
+	inputBuffer->Section.Data2 = 0x6eba;
+	inputBuffer->Section.Data3 = 0x4d8c;
+	memcpy(inputBuffer->Section.Data4, uuidend, sizeof(uuidend)); //Avoid Windows defender false positive
+
+	strcpy(inputBuffer->PropertyName, propertyStr);
+	inputBuffer->PropertyNameLength = strlen(propertyStr) + 1;
+
+	PACPI_EVAL_OUTPUT_BUFFER outputBuffer;
+	size_t outputArgumentBufferSize = 32;
+	size_t outputBufferSize = FIELD_OFFSET(ACPI_EVAL_OUTPUT_BUFFER, Argument) + sizeof(ACPI_METHOD_ARGUMENT_V1) + outputArgumentBufferSize;
+
+	WDF_OBJECT_ATTRIBUTES attributes;
+	WDF_OBJECT_ATTRIBUTES_INIT(&attributes);
+	attributes.ParentObject = FxDevice;
+	status = WdfMemoryCreate(&attributes,
+		NonPagedPoolNx,
+		0,
+		outputBufferSize,
+		&outputMemory,
+		&outputBuffer);
+	if (!NT_SUCCESS(status)) {
+		goto Exit;
+	}
+
+	WDF_MEMORY_DESCRIPTOR inputMemDesc;
+	WDF_MEMORY_DESCRIPTOR outputMemDesc;
+	WDF_MEMORY_DESCRIPTOR_INIT_BUFFER(&inputMemDesc, inputBuffer, (ULONG)inputBufferLen);
+	WDF_MEMORY_DESCRIPTOR_INIT_HANDLE(&outputMemDesc, outputMemory, NULL);
+
+	status = WdfIoTargetSendInternalIoctlSynchronously(
+		WdfDeviceGetIoTarget(FxDevice),
+		NULL,
+		IOCTL_ACPI_GET_DEVICE_SPECIFIC_DATA,
+		&inputMemDesc,
+		&outputMemDesc,
+		NULL,
+		NULL
+	);
+	if (!NT_SUCCESS(status)) {
+		Max98390Print(
+			DEBUG_LEVEL_ERROR,
+			DBG_IOCTL,
+			"Error getting device data - 0x%x\n",
+			status);
+		goto Exit;
+	}
+
+	if (outputBuffer->Signature != ACPI_EVAL_OUTPUT_BUFFER_SIGNATURE_V1 &&
+		outputBuffer->Count < 1 &&
+		outputBuffer->Argument->DataLength > 32) {
+		status = STATUS_ACPI_INVALID_ARGUMENT;
+		goto Exit;
+	}
+
+	if (property) {
+		RtlZeroMemory(property, 32);
+		RtlCopyMemory(property, outputBuffer->Argument->Data, min(outputBuffer->Argument->DataLength, 32));
+	}
+
+Exit:
+	if (inputBuffer) {
+		ExFreePoolWithTag(inputBuffer, MAX98390_POOL_TAG);
+	}
+	if (outputMemory != WDF_NO_HANDLE) {
+		WdfObjectDelete(outputMemory);
+	}
+	return status;
+}
+
 #define MAX_DEVICE_REG_VAL_LENGTH 0x100
 NTSTATUS GetSmbiosName(WCHAR systemProductName[MAX_DEVICE_REG_VAL_LENGTH]) {
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -377,13 +468,20 @@ void max98390_init_regs(PMAX98390_CONTEXT pDevice, UINT8 vmon_slot_no, UINT8 imo
 	}
 }
 
-void uploadDSMBin(PMAX98390_CONTEXT pDevice, WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH]) {
+void uploadDSMBin(PMAX98390_CONTEXT pDevice, WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH], CHAR DSMFileName[32]) {
 	NTSTATUS status;
 
 	struct firmware *fw = NULL;
 	status = STATUS_NOT_FOUND;
 	if (wcscmp(SystemProductName, L"Nightfury") == 0) {
 		status = request_firmware(&fw, L"\\SystemRoot\\system32\\DRIVERS\\dsm_param_Google_Nightfury.bin");
+	}
+	else {
+		WCHAR fwPath[MAX_DEVICE_REG_VAL_LENGTH];
+		status = RtlStringCbPrintfW(fwPath, MAX_DEVICE_REG_VAL_LENGTH, L"\\SystemRoot\\system32\\DRIVERS\\%ls_Google_%s.bin", DSMFileName, SystemProductName);
+		if (NT_SUCCESS(status)) {
+			status = request_firmware(&fw, fwPath);
+		}
 	}
 	if (!NT_SUCCESS(status) || !fw) {
 		DbgPrint("Warning: No DSM found for MAX98390!!!\n");
@@ -463,13 +561,16 @@ StartCodec(
 	/* Amp init setting */
 	max98390_init_regs(pDevice, vmon_slot_no, imon_slot_no);
 
+	CHAR dsmFileName[32];
+	GetStringProperty(pDevice->FxDevice, "maxim,dsm_param_name", &dsmFileName);
+
 	WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH];
 	status = GetSmbiosName(SystemProductName);
 	if (!NT_SUCCESS(status)) {
 		return status;
 	}
 	/* Update dsm bin param */
-	uploadDSMBin(pDevice, SystemProductName);
+	uploadDSMBin(pDevice, SystemProductName, dsmFileName);
 
 	/* Dsm Setting */
 	if (ref_rdc_value) {
@@ -489,7 +590,7 @@ StartCodec(
 
 	max98390_reg_write(pDevice, DSM_VOL_CTRL, 0x8a);
 
-	max98390_reg_write(pDevice, MAX98390_PCM_CH_SRC_1, pDevice->UID % 2); //Set Left or Right according to UID
+	max98390_reg_write(pDevice, MAX98390_PCM_CH_SRC_1, pDevice->UID % 4); //Set Left or Right according to UID
 
 	if (wcscmp(SystemProductName, L"Nightfury") == 0) { //10th gen
 		max98390_reg_update(pDevice,
