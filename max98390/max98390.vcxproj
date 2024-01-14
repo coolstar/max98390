@@ -88,7 +88,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Inf>
-      <TimeStamp>1.0.0</TimeStamp>
+      <TimeStamp>1.0.1</TimeStamp>
     </Inf>
     <PreBuildEvent>
       <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"&amp;&amp; copy "$(SolutionDir)max98390\dsm_param_*.bin" "$(Inf2CatSource)"</Command>
@@ -105,7 +105,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Inf>
-      <TimeStamp>1.0.0</TimeStamp>
+      <TimeStamp>1.0.1</TimeStamp>
     </Inf>
     <PreBuildEvent>
       <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"&amp;&amp; copy "$(SolutionDir)max98390\dsm_param_*.bin" "$(Inf2CatSource)"</Command>
@@ -122,7 +122,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Inf>
-      <TimeStamp>1.0.0</TimeStamp>
+      <TimeStamp>1.0.1</TimeStamp>
     </Inf>
     <PreBuildEvent>
       <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"&amp;&amp; copy "$(SolutionDir)max98390\dsm_param_*.bin" "$(Inf2CatSource)"</Command>
@@ -139,7 +139,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Inf>
-      <TimeStamp>1.0.0</TimeStamp>
+      <TimeStamp>1.0.1</TimeStamp>
     </Inf>
     <PreBuildEvent>
       <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"&amp;&amp; copy "$(SolutionDir)max98390\dsm_param_*.bin" "$(Inf2CatSource)"</Command>

@@ -82,6 +82,7 @@ typedef struct _MAX98390_CONTEXT
 	PVOID CSAudioAPICallbackObj;
 
 	BOOL CSAudioManaged;
+	BOOLEAN CSAudioRequestsOn;
 
 } MAX98390_CONTEXT, *PMAX98390_CONTEXT;
 

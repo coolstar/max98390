@@ -58,6 +58,10 @@ dsm_param_tt_R_Google_Redrix.bin  = 1
 [Max98390_Device.NT]
 CopyFiles=Drivers_Dir
 
+[Max98390_Device.NT.HW]
+Include=pci.inf
+Needs=PciD3ColdSupported.HW
+
 [Drivers_Dir]
 max98390.sys
 dsm_param_Google_Nightfury.bin
