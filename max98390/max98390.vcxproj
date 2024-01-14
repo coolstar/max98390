@@ -91,8 +91,11 @@
       <TimeStamp>1.0.0</TimeStamp>
     </Inf>
     <PreBuildEvent>
-      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"</Command>
+      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"&amp;&amp; copy "$(SolutionDir)max98390\dsm_param_*.bin" "$(Inf2CatSource)"</Command>
     </PreBuildEvent>
+    <DriverSign>
+      <FileDigestAlgorithm>SHA256</FileDigestAlgorithm>
+    </DriverSign>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -105,8 +108,11 @@
       <TimeStamp>1.0.0</TimeStamp>
     </Inf>
     <PreBuildEvent>
-      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"</Command>
+      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"&amp;&amp; copy "$(SolutionDir)max98390\dsm_param_*.bin" "$(Inf2CatSource)"</Command>
     </PreBuildEvent>
+    <DriverSign>
+      <FileDigestAlgorithm>SHA256</FileDigestAlgorithm>
+    </DriverSign>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -119,8 +125,11 @@
       <TimeStamp>1.0.0</TimeStamp>
     </Inf>
     <PreBuildEvent>
-      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"</Command>
+      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"&amp;&amp; copy "$(SolutionDir)max98390\dsm_param_*.bin" "$(Inf2CatSource)"</Command>
     </PreBuildEvent>
+    <DriverSign>
+      <FileDigestAlgorithm>SHA256</FileDigestAlgorithm>
+    </DriverSign>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -133,8 +142,11 @@
       <TimeStamp>1.0.0</TimeStamp>
     </Inf>
     <PreBuildEvent>
-      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"</Command>
+      <Command>cmd /k mkdir "$(Inf2CatSource)" &amp;&amp; copy "$(SolutionDir)max98390\dsm_param_Google_Nightfury.bin" "$(Inf2CatSource)"&amp;&amp; copy "$(SolutionDir)max98390\dsm_param_*.bin" "$(Inf2CatSource)"</Command>
     </PreBuildEvent>
+    <DriverSign>
+      <FileDigestAlgorithm>SHA256</FileDigestAlgorithm>
+    </DriverSign>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Inf Include="max98390.inf" />
@@ -158,9 +170,20 @@
     <ClCompile Include="max98390.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="dsm_param_Google_Gimble.bin" />
     <None Include="dsm_param_Google_Nightfury.bin">
       <DeploymentContent>true</DeploymentContent>
     </None>
+    <None Include="dsm_param_Google_Redrix.bin" />
+    <None Include="dsm_param_L_Google_Gimble.bin" />
+    <None Include="dsm_param_L_Google_Gimble4ES.bin" />
+    <None Include="dsm_param_L_Google_Redrix.bin" />
+    <None Include="dsm_param_R_Google_Gimble.bin" />
+    <None Include="dsm_param_R_Google_Gimble4ES.bin" />
+    <None Include="dsm_param_R_Google_Redrix.bin" />
+    <None Include="dsm_param_tt_Google_Redrix.bin" />
+    <None Include="dsm_param_tt_L_Google_Redrix.bin" />
+    <None Include="dsm_param_tt_R_Google_Redrix.bin" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="max98390.rc" />

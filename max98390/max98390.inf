@@ -31,6 +31,17 @@ DefaultDestDir = 12
 [SourceDisksFiles]
 max98390.sys  = 1
 dsm_param_Google_Nightfury.bin  = 1
+dsm_param_Google_Gimble.bin  = 1
+dsm_param_Google_Redrix.bin  = 1
+dsm_param_L_Google_Gimble.bin  = 1
+dsm_param_L_Google_Gimble4ES.bin  = 1
+dsm_param_L_Google_Redrix.bin  = 1
+dsm_param_R_Google_Gimble.bin  = 1
+dsm_param_R_Google_Gimble4ES.bin  = 1
+dsm_param_R_Google_Redrix.bin  = 1
+dsm_param_tt_Google_Redrix.bin  = 1
+dsm_param_tt_L_Google_Redrix.bin  = 1
+dsm_param_tt_R_Google_Redrix.bin  = 1
 
 ;*****************************************
 ; max98390  Install Section
@@ -50,6 +61,17 @@ CopyFiles=Drivers_Dir
 [Drivers_Dir]
 max98390.sys
 dsm_param_Google_Nightfury.bin
+dsm_param_Google_Gimble.bin
+dsm_param_Google_Redrix.bin
+dsm_param_L_Google_Gimble.bin
+dsm_param_L_Google_Gimble4ES.bin
+dsm_param_L_Google_Redrix.bin
+dsm_param_R_Google_Gimble.bin
+dsm_param_R_Google_Gimble4ES.bin
+dsm_param_R_Google_Redrix.bin
+dsm_param_tt_Google_Redrix.bin
+dsm_param_tt_L_Google_Redrix.bin
+dsm_param_tt_R_Google_Redrix.bin
 
 ;-------------- Service installation
 [Max98390_Device.NT.Services]
