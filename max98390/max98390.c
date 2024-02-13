@@ -306,7 +306,7 @@ static NTSTATUS GetStringProperty(
 	inputBuffer->PropertyNameLength = strlen(propertyStr) + 1;
 
 	PACPI_EVAL_OUTPUT_BUFFER outputBuffer;
-	size_t outputArgumentBufferSize = 32;
+	size_t outputArgumentBufferSize = 64;
 	size_t outputBufferSize = FIELD_OFFSET(ACPI_EVAL_OUTPUT_BUFFER, Argument) + sizeof(ACPI_METHOD_ARGUMENT_V1) + outputArgumentBufferSize;
 
 	WDF_OBJECT_ATTRIBUTES attributes;
@@ -347,14 +347,14 @@ static NTSTATUS GetStringProperty(
 
 	if (outputBuffer->Signature != ACPI_EVAL_OUTPUT_BUFFER_SIGNATURE_V1 &&
 		outputBuffer->Count < 1 &&
-		outputBuffer->Argument->DataLength > 32) {
+		outputBuffer->Argument->DataLength > 64) {
 		status = STATUS_ACPI_INVALID_ARGUMENT;
 		goto Exit;
 	}
 
 	if (property) {
-		RtlZeroMemory(property, 32);
-		RtlCopyMemory(property, outputBuffer->Argument->Data, min(outputBuffer->Argument->DataLength, 32));
+		RtlZeroMemory(property, 64);
+		RtlCopyMemory(property, outputBuffer->Argument->Data, min(outputBuffer->Argument->DataLength, 64));
 	}
 
 Exit:
@@ -468,7 +468,7 @@ void max98390_init_regs(PMAX98390_CONTEXT pDevice, UINT8 vmon_slot_no, UINT8 imo
 	}
 }
 
-void uploadDSMBin(PMAX98390_CONTEXT pDevice, WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH], CHAR DSMFileName[32]) {
+void uploadDSMBin(PMAX98390_CONTEXT pDevice, WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH], CHAR DSMFileName[64]) {
 	NTSTATUS status;
 
 	struct firmware *fw = NULL;
@@ -561,7 +561,7 @@ StartCodec(
 	/* Amp init setting */
 	max98390_init_regs(pDevice, vmon_slot_no, imon_slot_no);
 
-	CHAR dsmFileName[32];
+	CHAR dsmFileName[64];
 	GetStringProperty(pDevice->FxDevice, "maxim,dsm_param_name", &dsmFileName);
 
 	WCHAR SystemProductName[MAX_DEVICE_REG_VAL_LENGTH];
