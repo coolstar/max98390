@@ -478,7 +478,7 @@ void uploadDSMBin(PMAX98390_CONTEXT pDevice, WCHAR SystemProductName[MAX_DEVICE_
 	}
 	else {
 		WCHAR fwPath[MAX_DEVICE_REG_VAL_LENGTH];
-		status = RtlStringCbPrintfW(fwPath, MAX_DEVICE_REG_VAL_LENGTH, L"\\SystemRoot\\system32\\DRIVERS\\%ls_Google_%s.bin", DSMFileName, SystemProductName);
+		status = RtlStringCbPrintfW(fwPath, MAX_DEVICE_REG_VAL_LENGTH, L"\\SystemRoot\\system32\\DRIVERS\\%hs", DSMFileName);
 		if (NT_SUCCESS(status)) {
 			status = request_firmware(&fw, fwPath);
 		}
@@ -600,7 +600,28 @@ StartCodec(
 		);
 	}
 	else { //12th gen
+		int boost = 0;
+		switch (pDevice->UID) {
+		case 0:
+			boost = 0x2;
+			break;
+		case 1:
+			boost = 0x0;
+			break;
+		case 2:
+			boost = 0x3;
+			break;
+		case 3:
+			boost = 0x1;
+			break;
+		}
+		max98390_reg_update(pDevice,
+			MAX98390_BOOST_CTRL3,
+			3 << MAX98390_BOOST_CLK_PHASE_CFG_SHIFT,
+			boost << MAX98390_BOOST_CLK_PHASE_CFG_SHIFT
+		);
 
+		max98390_reg_write(pDevice, MAX98390_BOOST_CTRL1, 0x1a); //current limit
 	}
 
 
