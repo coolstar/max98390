@@ -921,9 +921,7 @@ Status
 	PMAX98390_CONTEXT pDevice = GetDeviceContext(FxDevice);
 	NTSTATUS status = STATUS_SUCCESS;
 
-	if (!pDevice->CSAudioManaged) {
-		status = StartCodec(pDevice);
-	}
+	status = StartCodec(pDevice);
 
 	return status;
 }
