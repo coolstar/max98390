@@ -77,6 +77,7 @@ typedef struct _MAX98390_CONTEXT
 	INT32 UID;
 
 	BOOLEAN DevicePoweredOn;
+	BOOLEAN DidSwResetOnce;
 
 	PCALLBACK_OBJECT CSAudioAPICallback;
 	PVOID CSAudioAPICallbackObj;

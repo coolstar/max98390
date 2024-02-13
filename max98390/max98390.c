@@ -59,6 +59,18 @@ NTSTATUS max98390_reg_read(
 	return status;
 }
 
+NTSTATUS max98390_reg_write_nolock(
+	_In_ PMAX98390_CONTEXT pDevice,
+	uint16_t reg,
+	uint8_t data
+) {
+	uint8_t buf[3];
+	buf[0] = (reg >> 8) & 0xff;
+	buf[1] = reg & 0xff;
+	buf[2] = data;
+	return SpbDoWriteDataSynchronously(&pDevice->I2CContext, buf, sizeof(buf));
+}
+
 NTSTATUS max98390_reg_write(
 	_In_ PMAX98390_CONTEXT pDevice,
 	uint16_t reg,
@@ -505,9 +517,15 @@ void uploadDSMBin(PMAX98390_CONTEXT pDevice, WCHAR SystemProductName[MAX_DEVICE_
 	max98390_reg_write(pDevice, MAX98390_R203A_AMP_EN, 0x80);
 	dsm_param += MAX98390_DSM_PAYLOAD_OFFSET;
 
+	WdfWaitLockAcquire(pDevice->I2CContext.SpbLock, NULL);
+	SpbLockController(&pDevice->I2CContext);
+
 	for (UINT16 i = 0; i < param_size; i++) {
-		max98390_reg_write(pDevice, param_start_addr + i, dsm_param[i]);
+		max98390_reg_write_nolock(pDevice, param_start_addr + i, dsm_param[i]);
 	}
+
+	SpbUnlockController(&pDevice->I2CContext);
+	WdfWaitLockRelease(pDevice->I2CContext.SpbLock, NULL);
 
 	max98390_reg_write(pDevice, MAX98390_R23E1_DSP_GLOBAL_EN, 0x01);
 

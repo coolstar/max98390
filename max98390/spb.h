@@ -40,6 +40,21 @@ typedef struct _SPB_CONTEXT
 } SPB_CONTEXT;
 
 NTSTATUS
+SpbDoWriteDataSynchronously(
+	IN SPB_CONTEXT* SpbContext,
+	IN PVOID Data,
+	IN ULONG Length
+);
+NTSTATUS
+SpbLockController(
+	IN SPB_CONTEXT* SpbContext
+);
+NTSTATUS
+SpbUnlockController(
+	IN SPB_CONTEXT* SpbContext
+);
+
+NTSTATUS
 SpbXferDataSynchronously(
 	_In_ SPB_CONTEXT* SpbContext,
 	_In_ PVOID SendData,
