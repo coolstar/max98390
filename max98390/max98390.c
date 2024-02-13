@@ -549,14 +549,16 @@ StartCodec(
 	GetIntegerProperty(pDevice->FxDevice, "maxim,r0_calib", &ref_rdc_value);
 	GetIntegerProperty(pDevice->FxDevice, "maxim,temperature_calib", &ambient_temp_value);
 
-	status = max98390_reg_write(pDevice, MAX98390_SOFTWARE_RESET, 0x01);
-	if (!NT_SUCCESS(status)) {
-		return status;
-	}
+	if (!pDevice->DidSwResetOnce) {
+		status = max98390_reg_write(pDevice, MAX98390_SOFTWARE_RESET, 0x01);
+		if (!NT_SUCCESS(status)) {
+			return status;
+		}
 
-	LARGE_INTEGER Interval;
-	Interval.QuadPart = -10 * 1000 * 20;
-	KeDelayExecutionThread(KernelMode, false, &Interval);
+		LARGE_INTEGER Interval;
+		Interval.QuadPart = -10 * 1000 * 20;
+		KeDelayExecutionThread(KernelMode, false, &Interval);
+	}
 
 	/* Amp init setting */
 	max98390_init_regs(pDevice, vmon_slot_no, imon_slot_no);
@@ -646,6 +648,7 @@ StopCodec(
 	}
 
 	pDevice->DevicePoweredOn = FALSE;
+	pDevice->DidSwResetOnce = TRUE;
 	return status;
 }
 
@@ -1046,6 +1049,7 @@ Max98390EvtDeviceAdd(
 
 	devContext->FxDevice = device;
 	devContext->CSAudioManaged = FALSE;
+	devContext->DidSwResetOnce = FALSE;
 
 	WDF_IO_QUEUE_CONFIG_INIT(&queueConfig, WdfIoQueueDispatchManual);
 
